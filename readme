@@ -1,0 +1,110 @@
+# Laboratorio8
+# INSTALACIÓN DE ANSIBLE Y PYTHON EN EL SERVIDOR QUE INSTALEMOS ANSIBLE
+
+sudo apt-get update
+sudo apt-get install -y python-minimal
+
+sudo apt-get install software-properties-common
+sudo apt-add-repository --yes --update ppa:ansible/ansible
+sudo apt-get install ansible
+
+# CREAMOS UN USUARIO ANSIBLE
+
+sudo adduser ansible
+
+# CREAMOS UN FICHERO EN /etc/ansible/hosts Y AGRUPAMOS LOS NODOS DE AMBOS SERVIDORES
+
+[ansibleserver]
+192.168.100.59
+
+[webservers]
+192.168.100.61
+
+# CONFIGURACIÓN DEL NODO CLIENTE
+
+ansible-client1:
+
+sudo apt-get update
+sudo apt-get install -y python-minimal openssh-server
+
+# GENERACIÓN Y CONFIGURACIÓN DE LLAVES DE SSH
+
+elder@puppet-server:~$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/ansible/.ssh/id_rsa): 
+Created directory '/home/ansible/.ssh'.
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/ansible/.ssh/id_rsa.
+Your public key has been saved in /home/ansible/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:EdnZDY5l2BJlxiF6RUqf/xmq1OWPBaX3MQs8OU2Prjc elder@puppet-server.localdomain.lan
+The key's randomart image is:
++---[RSA 2048]----+
+|        .o+X@+   |
+|        .+=%+..  |
+|        o +.+  ..|
+|         o  ..++.|
+|        S    *=*o|
+|            ..B+B|
+|           . o.++|
+|          . ..Eo.|
+|           ......|
++----[SHA256]-----+
+
+# COPIAR LA LLAVE PUBLICA EN EL CLIENTE
+# Copiar a ansible-client1:
+
+elder@puppet-server:~$ ssh-copy-id ansible@192.167.100.61
+
+# COMPROBACIÓN DE LOS NODOS CLIENTES
+# Una vez que tenemos todos los pasos anteriores completados, podremos comprobar si la comunicación es correcta con todos los nodos gestionados lanzando el # siguiente comando:
+
+ansible@puppet-server:~$ ansible 192.168.100.61 -m ping
+Enter passphrase for key '/home/ansible/.ssh/id_rsa': 
+192.168.100.61 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    }, 
+    "changed": false, 
+    "ping": "pong"
+}
+
+# PLAYBOOKS
+# Los playbooks nos proporcionan una forma diferente de trabajar y utilizar Ansible en nuestro día a día.
+
+ansible@puppet-server:~$ sudo nano playbook_test.yaml 
+
+ hosts: webservers
+  become: yes
+  tasks:
+  - name: Reiniciar todos los servidores Web
+    apt: name=apache2 state=latest
+  - name: verificar apache
+    service: name=apache2 state=started enabled=yes
+
+  - name: add grafana gpg key
+    shell: curl https://packages.grafana.com/gpg.key | sudo apt-key add -
+
+  - name: add grafana repositorio
+    apt_repository:
+     repo: deb https://packages.grafana.com/oss/deb stable main
+     state: present
+     filename: grafana
+
+  - name: Install grafana
+    apt:
+        name: grafana
+        state: present
+        update_cache: yes
+
+  - name: Enable and start grafana service
+    service:
+           name: grafana-server
+           enabled: yes
+           state: started
+  - name: Install necesary package
+    apt:
+        name: apt-transport-https
+        state: present
+        update_cache: yes
