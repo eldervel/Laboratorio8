@@ -1,0 +1,21 @@
+PLAY [webservers] *******************************************************************************
+
+TASK [Gathering Facts] **************************************************************************
+Enter passphrase for key '/home/ansible/.ssh/id_rsa': 
+fatal: [192.168.100.61]: FAILED! => {"msg": "Missing sudo password"}
+
+PLAY RECAP **************************************************************************************
+192.168.100.61             : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0 
+
+
+PLAY RECAP **************************************************************************************
+192.168.100.61             : ok=0    changed=0    unreachable=0    failed=1 skipped=0    rescued=0    ignored=0 
+
+PLAY [webservers] **************************************************************
+
+TASK [Gathering Facts] *********************************************************
+Enter passphrase for key '/home/ansible/.ssh/id_rsa': 
+fatal: [192.168.100.61]: FAILED! => {"msg": "Missing sudo password"}
+
+PLAY RECAP *********************************************************************
+192.168.100.61             : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0  
